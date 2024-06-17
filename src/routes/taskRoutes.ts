@@ -19,7 +19,6 @@ router.post("", async (req, res) => {
       body: req.body.body,
       color: req.body.color || "transparent",
       status: req.body.status,
-      // createdAt: admin.firestore.FieldValue.serverTimestamp(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -48,20 +47,19 @@ router.get("", async (req, res) => {
   }
 });
 
-// Retornar tasks por ID
+// Retornar task por ID
 router.get("/:id", async (req, res) => {
   try {
-    const tasksCollection = await db
-      .collection("tasks")
-      .doc(req.params.id)
-      .get();
+    const dbCollection = db.collection("tasks");
 
-    if (!tasksCollection.exists) {
+    const foundTask = await dbCollection.where("id", "==", req.params.id).get();
+
+    if (foundTask.empty) {
       res.status(404).send({ Error: "Task não encontrada" });
     } else {
-      res
-        .status(200)
-        .json({ id: tasksCollection.id, ...tasksCollection.data() });
+      foundTask.forEach((task) => {
+        res.status(200).json(task.data());
+      });
     }
   } catch (error) {
     res

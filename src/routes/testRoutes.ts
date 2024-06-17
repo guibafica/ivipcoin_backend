@@ -3,7 +3,7 @@ import { Router } from "express";
 const router = Router();
 
 router.get("/test", async (req, res) => {
-  res.status(500).send({ message: "Hello World!!!" });
+  res.status(200).send({ message: "Test" });
 });
 
 export default router;

@@ -60,13 +60,6 @@ router.get("/:id", async (req, res) => {
     if (dbCollection.empty) {
       res.status(404).send({ Error: "Task não encontrada" });
     } else {
-      // const tasks = dbCollection.docs.map((doc) => ({
-      //   id: doc.id,
-      //   ...doc.data(),
-      // }));
-
-      // res.status(200).json(tasks);
-
       dbCollection.docs.map((doc) => {
         res.status(200).json({
           id: doc.id,
@@ -81,9 +74,11 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Atualizar task por ID do Firebase
+// Atualizar task por ID
 router.put("/:id", async (req, res) => {
   try {
+    const id = req.params.id;
+
     const updatedTask: Partial<Tasks> = {
       body: req.body.body,
       color: req.body.color,
@@ -91,17 +86,26 @@ router.put("/:id", async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    await db
+    const dbCollection = await db
       .collection("tasks")
-      .doc(req.params.id)
-      .set(updatedTask, { merge: true });
-
-    const updatedDbCollection = await db
-      .collection("tasks")
-      .doc(req.params.id)
+      .where("id", "==", id)
       .get();
 
-    res.status(200).json({ id: req.params.id, ...updatedDbCollection.data() });
+    if (dbCollection.empty) {
+      res.status(404).send({ Error: "Task não encontrada" });
+    }
+
+    const batch = db.batch();
+
+    dbCollection.docs.forEach((task) => {
+      const docRef = db.collection("tasks").doc(task.id);
+
+      batch.update(docRef, updatedTask);
+    });
+
+    await batch.commit();
+
+    res.status(200).json({ message: "Task atualizada com sucesso" });
   } catch (error) {
     res.status(500).send({ Error: "Erro ao tentar atualizar esta task" });
   }

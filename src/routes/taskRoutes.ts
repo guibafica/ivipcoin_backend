@@ -50,15 +50,28 @@ router.get("", async (req, res) => {
 // Retornar task por ID
 router.get("/:id", async (req, res) => {
   try {
-    const dbCollection = db.collection("tasks");
+    const id = req.params.id;
 
-    const foundTask = await dbCollection.where("id", "==", req.params.id).get();
+    const dbCollection = await db
+      .collection("tasks")
+      .where("id", "==", id)
+      .get();
 
-    if (foundTask.empty) {
+    if (dbCollection.empty) {
       res.status(404).send({ Error: "Task não encontrada" });
     } else {
-      foundTask.forEach((task) => {
-        res.status(200).json(task.data());
+      // const tasks = dbCollection.docs.map((doc) => ({
+      //   id: doc.id,
+      //   ...doc.data(),
+      // }));
+
+      // res.status(200).json(tasks);
+
+      dbCollection.docs.map((doc) => {
+        res.status(200).json({
+          id: doc.id,
+          ...doc.data(),
+        });
       });
     }
   } catch (error) {
@@ -68,14 +81,14 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Atualizar task por ID
+// Atualizar task por ID do Firebase
 router.put("/:id", async (req, res) => {
   try {
     const updatedTask: Partial<Tasks> = {
       body: req.body.body,
       color: req.body.color,
       status: req.body.status,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     };
 
     await db
@@ -94,7 +107,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Deletar uma task por ID
+// Deletar uma task pelo ID do Firebase
 router.delete("/:id", async (req, res) => {
   try {
     await db.collection("tasks").doc(req.params.id).delete();

@@ -23,11 +23,11 @@ router.post("", async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    const tasksCollection = await db.collection("tasks").add(newTask);
+    await db.collection("tasks").add(newTask);
 
-    res.status(201).json(newTask);
+    res.status(201).json({ message: "Task criada com sucesso" });
   } catch (error) {
-    res.status(500).send({ Error: "Erro ao tentar criar uma nova task" });
+    res.status(500).send({ error: "Erro ao tentar criar uma nova task" });
   }
 });
 
@@ -43,7 +43,7 @@ router.get("", async (req, res) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    res.status(500).send({ Error: "Erro ao tentar listar todas as tasks" });
+    res.status(500).send({ error: "Erro ao tentar listar todas as tasks" });
   }
 });
 
@@ -58,7 +58,9 @@ router.get("/:id", async (req, res) => {
       .get();
 
     if (dbCollection.empty) {
-      res.status(404).send({ Error: "Task não encontrada" });
+      res.status(404).send({ error: "Task não encontrada" });
+
+      return;
     } else {
       dbCollection.docs.map((doc) => {
         res.status(200).json({
@@ -70,7 +72,7 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .send({ Error: "Erro ao tentar listar uma task com este ID" });
+      .send({ error: "Erro ao tentar listar uma task com este ID" });
   }
 });
 
@@ -92,7 +94,9 @@ router.put("/:id", async (req, res) => {
       .get();
 
     if (dbCollection.empty) {
-      res.status(404).send({ Error: "Task não encontrada" });
+      res.status(404).send({ error: "Task não encontrada" });
+
+      return;
     }
 
     const batch = db.batch();
@@ -107,18 +111,37 @@ router.put("/:id", async (req, res) => {
 
     res.status(200).json({ message: "Task atualizada com sucesso" });
   } catch (error) {
-    res.status(500).send({ Error: "Erro ao tentar atualizar esta task" });
+    res.status(500).send({ error: "Erro ao tentar atualizar esta task" });
   }
 });
 
-// Deletar uma task pelo ID do Firebase
+// Deletar uma task pelo ID
 router.delete("/:id", async (req, res) => {
   try {
-    await db.collection("tasks").doc(req.params.id).delete();
+    const id = req.params.id;
 
-    res.status(204).send();
+    const foundedTask = await db
+      .collection("tasks")
+      .where("id", "==", id)
+      .get();
+
+    if (foundedTask.empty) {
+      res.status(404).send({ error: "Task não encontrada com o id informado" });
+
+      return;
+    }
+
+    foundedTask.docs.forEach((task) => {
+      const taskCollection = db.collection("tasks").doc(task.id);
+
+      db.batch().delete(taskCollection);
+    });
+
+    await db.batch().commit();
+
+    res.status(200).send({ message: "Task deletada com sucesso" });
   } catch (error) {
-    res.status(500).send({ Error: "Erro ao tentar deletar esta task" });
+    res.status(500).send({ error: "Erro ao tentar deletar esta task" });
   }
 });
 

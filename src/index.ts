@@ -13,4 +13,4 @@ app.use("/tasks", taskRoutes);
 
 app.use("/", (req, res) => res.status(200).send({ message: "Hello World" }));
 
-app.listen(3333, () => console.log("🚀 HTTP server running! 🚀"));
+app.listen(3000, () => console.log("🚀 HTTP server running! 🚀"));

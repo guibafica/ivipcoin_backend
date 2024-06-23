@@ -34,11 +34,6 @@ A aplicação deve ser capaz de criar, atualizar e excluir tarefas. As tarefas d
 - TypeScript: Superconjunto de JavaScript desenvolvido pela Microsoft que adiciona tipagem estática.
 - Banco de Dados Firebase: Plataforma desenvolvida pelo Google que oferece diversos serviços para facilitar o desenvolvimento de aplicativos.
 - Express: Framework web minimalista e flexível para Node.js.
-- Radix: Coleção de componentes JavaScript para construir interfaces de usuário.
-- Date-fns: Biblioteca moderna e simples para manipulação de datas em JavaScript.
-- Lucide: Biblioteca de ícones para React.
-- Sonner: Biblioteca para utilização de toast.
-- Tailwind: Framework de CSS altamente personalizável e de baixo nível para desenvolvimento de interfaces web.
 - Zod: Biblioteca JavaScript desenvolvida para validação de dados de forma eficiente e declarativa.
 
 # Como rodar o projeto
